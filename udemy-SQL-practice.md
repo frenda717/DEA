@@ -18,13 +18,13 @@
 
     Did women and children have better odds of surviving the Titanic than others did?
 
-        SELECT * FROM titanic LIMIT 10;
+        (SELECT * FROM titanic LIMIT 10;)
 
         SELECT AVG(Survived) AS overall_rate FROM titanic;
 
         SELECT AVG(Survived) AS women_children_rate FROM titanic WHERE Age <= 12 OR Sex = 'female' ;
 
-        **SELECT AVG(Survived) AS others_rate FROM titanic WHERE Age > 12 AND Sex != 'female' ;**
+        SELECT AVG(Survived) AS others_rate FROM titanic WHERE Age > 12 AND Sex != 'female' ;
 
     
     Output:
@@ -48,3 +48,90 @@
         0.1282051282051282
 
      "everyone else" as having a non-female sex and being over the age of 12, rather than just testing for "male". This ensures we capture people who did not report as male or female, or perhaps left that data blank.
+
+
+2. Practicing grouping queries in SQL
+    Did class matter? We have the same sample of 100 passengers on the Titanic, but this time we want to explore if the passenger class of their ticket (first, second, or third class) affected their odds of survival.
+
+    Your sample dataset is in a table named titanic. This contains a column named Survived, which is 1 if they survived and 0 if not. There is also a Pclass column indicating their passenger class (1, 2, or 3.)
+
+
+    Your task is to use GROUP BY in SQL to produce the survival rate for each passenger class in our dataset. Your output should contain a table with two columns named Pclass and survival_rate. The results should be sorted in ascending order by passenger class.
+
+    First Attempt (Correct)
+
+        (SELECT * FROM titanic LIMIT 20; (print the column first) )
+
+        SELECT Pclass, AVG(Survived) AS survival_rate FROM titanic GROUP BY Pclass ORDER BY Pclass;
+
+    Although you could compute survival rate with complicated CASE and mathematical functions, a simple AVG will do - the math works out.
+
+    We produce survival_rates for each distinct Pclass using GROUP BY Pclass, and enforce the specified sorting of the results using ORDER BY.
+
+    Output:
+    
+        Pclass	survival_rate
+        1	0.47619047619047616
+        2	0.6666666666666666
+        3	0.3114754098360656
+
+
+3. Practicing join queries in SQL
+    We've loaded up a couple of tables of data from a fictional retailer: Products, containing information about the products sold by the company, and Suppliers, containing information about the companies that provided those products. These two tables are connected by columns named SupplierID.
+
+    Create a report of every ProductName in the Products table, together with the CompanyName associated with each product's supplier.
+
+    This query should be written in such a way that every product is listed in your report, even if no match exists in the Suppliers table for its SupplierID. Your final results should be sorted alphabetically by ProductName.
+
+
+    Hint:
+    The requirement to produce results for every product even if there is no matching SupplierID in the Suppliers table means a simple JOIN or INNER JOIN won't do.
+
+    Don't forget to use ORDER BY to produce the results in the order specified.
+
+    Remember you can refer to columns in specific tables using the format tablename.columnname.
+
+    First Attempt:
+
+        (SELECT * FROM Products LIMIT 10;)
+
+        (SELECT * FROM Suppliers LIMIT 10;)
+
+        SELECT Products.ProductName, Suppliers.CompanyName
+
+    Correct Answer:
+
+        (SELECT * FROM Products LIMIT 10;)
+
+        (SELECT * FROM Suppliers LIMIT 10;)
+
+        SELECT Products.ProductName, Suppliers.CompanyName FROM Products
+        LEFT JOIN Suppliers ON Products.SupplierID = Suppliers.SupplierID
+        ORDER BY Products.ProductName;
+
+
+    We are using LEFT JOIN to fulfill the requirement to produce a row for every product, even if there is no matching SupplierID in the Suppliers table.
+
+    ORDER BY is used to produce the specified sort order in the results.
+
+    Output:
+
+        ProductName	CompanyName
+        Alice Mutton	Pavlova, Ltd.
+        Aniseed Syrup	Exotic Liquids
+        Boston Crab Meat	New England Seafood Cannery
+        Camembert Pierrot	Gai pâturage
+        Carnarvon Tigers	Pavlova, Ltd.
+        Chai	Exotic Liquids
+        Chang	Exotic Liquids
+        Chartreuse verte	Aux joyeux ecclésiastiques
+        Chef Anton's Cajun Seasoning	New Orleans Cajun Delights
+        Chef Anton's Gumbo Mix	New Orleans Cajun Delights
+        Chocolade	Zaanse Snoepfabriek
+        Côte de Blaye	Aux joyeux ecclésiastiques
+        Escargots de Bourgogne	Escargots Nouveaux
+        Filo Mix	G'day, Mate
+        Flotemysost	Norske Meierier
+        Geitost	Norske Meierier
+        Genen Shouyu	Mayumi's
+        ...

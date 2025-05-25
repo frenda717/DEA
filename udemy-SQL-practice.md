@@ -24,10 +24,7 @@
 
         SELECT AVG(Survived) AS women_children_rate FROM titanic WHERE Age <= 12 OR Sex = 'female' ;
 
-        **SELECT AVG(Survived) AS others_rate FROM titanic WHERE Age > 12 AND Sex != 'female' ;**
-        這是一段說明：**`print("Hello, world!")`** 會印出問候語。
-
-
+        SELECT AVG(Survived) AS others_rate FROM titanic WHERE Age > 12 AND Sex != 'female' ;
     
     Output:
 

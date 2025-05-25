@@ -25,7 +25,10 @@
         SELECT AVG(Survived) AS women_children_rate FROM titanic WHERE Age <= 12 OR Sex = 'female' ;
 
         SELECT AVG(Survived) AS others_rate FROM titanic WHERE Age > 12 AND Sex != 'female' ;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6dbc3568ed84b1262d493c65346e36e7872add7a
     
     Output:
 
@@ -48,6 +51,7 @@
         0.1282051282051282
 
      "everyone else" as having a non-female sex and being over the age of 12, rather than just testing for "male". This ensures we capture people who did not report as male or female, or perhaps left that data blank.
+<<<<<<< HEAD
 
 
 2. Practicing grouping queries in SQL
@@ -135,3 +139,5 @@
         Geitost	Norske Meierier
         Genen Shouyu	Mayumi's
         ...
+=======
+>>>>>>> 6dbc3568ed84b1262d493c65346e36e7872add7a

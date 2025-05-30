@@ -17,7 +17,7 @@
 
 3. Data Engineer is using AWS Redshift to analyze sales data from a retail company. The table, `Monthly_Sales`, includes columns for `SaleID`, `ProductCategory`, `SaleMonth`, and `SaleAmount`. The task is to generate a monthly sales report, where each product category (Electronics, Clothing, Furniture) is **displayed as a column header** and each row represents a month with the total sales for that category. Which SQL operation should be used in AWS Redshift to efficiently generate the report according to the requirement?
 
-    ![q4](./DEA/image/q4.png "Table")
+    ![q4](./image/q4.png "Table")
 
     a. GROUP BY
     b. PIVOT
@@ -69,7 +69,7 @@
 
 6. A Data Engineer is tasked with developing a scalable data processing solution using AWS services to analyze game participation data. The solution needs to leverage data stored in three PostgreSQL tables within an Amazon RDS instance, as depicted in the provided ERD. The `games` table includes fields for `id`, `name`, and `time`, and the `players` table includes fields for `id`, and `name`, with table `games_players’ linking both the players and the games they participated in. Each player is allowed to participate once in a given game.
 
-    ![q6](./DEA/image/q6.png "Table")
+    ![q6](./image/q6.png "Table")
     
     Based on the ER diagram which constraint on `public.games_players` table is correct?
 
@@ -276,12 +276,12 @@
 
 ### Database
 1. (See DynamoDB – Partitions Internal) 
+
+
     To compute the number of partitions:
+    ![Partition](./image/partition.png "Partition")
     • # 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑐𝑎𝑝𝑎𝑐𝑖𝑡𝑦= 
     \(\left( \frac{RCUS_{Total}}{3000} \right) + \left( \frac{WCUS_{Total}}{1000} \right)\)
-
-    <pre> $$ \left( \frac{RCUS_{Total}}{3000} \right) + \left( \frac{WCUS_{Total}}{1000} \right) $$ </pre>
-
 
     • # 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑠𝑖𝑧𝑒=𝑇𝑜𝑡𝑎𝑙 𝑆𝑖𝑧𝑒
     \(\frac {𝑇𝑜𝑡𝑎𝑙 𝑆𝑖𝑧𝑒}{10 GB}\)
@@ -289,31 +289,66 @@
     • # 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠=
     ceil(max# 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑐𝑎𝑝𝑎𝑐𝑖𝑡𝑦,# 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑠𝑖𝑧𝑒 )
 
-    - Number of partitions by capacity:
 
-    $$
-    \text{\# of partitions}_{\text{by capacity}} =
-    \left( \frac{RCUS_{Total}}{3000} \right) +
-    \left( \frac{WCUS_{Total}}{1000} \right)
-    $$
+    1) 你有一個 DynamoDB table，總資料大小為 40 GB，設定為：
 
-    - Number of partitions by size:
+        RCU: 6000
+        WCU: 3000
 
-    $$
-    \text{\# of partitions}_{\text{by size}} =
-    \frac{\text{Total Size}}{10\ \text{GB}}
-    $$
+        請問這個 table 需要至少幾個 partitions？
 
-    - Final number of partitions:
+        ✅ 解答：
+        
+        a. 依容量：
 
-    $$
-    \text{\# of partitions} =
-    \lceil \max\left(
-        \text{\# of partitions}_{\text{by capacity}},
-        \text{\# of partitions}_{\text{by size}}
-    \right) \rceil
-    $$
+            RCU/3000 = 6000/3000 = 2
+            WCU/1000 = 3000/1000 = 3
+            總partitions by capacity = 2+3=5
 
+        b. 依大小:
+
+            40GB/10GB = 4
+
+        c. 取最大值，向上取整:
+
+            max(5,4) =5 => 需要5 partitions
+        
+
+
+    2) 你有一個 DynamoDB table，總資料大小為 25 GB，設定為：
+
+        RCU: 2000
+        WCU: 500
+
+        請問最少需要幾個 partitions？
+
+        ✅ 解答：
+        
+        a. 依容量： 
+            
+            RCU/3000 = 2000/3000 ≒ 0.67
+            WCU/1000 = 500/1000 ≒ 0.5
+            總partitions by capacity = 0.67+0.5=1.17 => ceil=2
+
+         b. 依大小:
+
+            25GB/10GB = 2.5=> ceil=3
+
+        c. 取最大值，向上取整:
+
+            max(2,3) =3 => 需要3 partitions       
+
+
+
+    3) 觀念題）： 哪一個是 partition 計算的正確邏輯？
+
+        A. 只根據 RCU/WCU 計算
+        B. 只根據總資料大小計算
+        C. 根據 RCU/WCU 和資料大小中較大的那個來決定
+        D. RCUs + WCUs + item 數量
+
+        ✅ 解答：C
+        DynamoDB 的 partition 是根據 容量和大小中較大的需求 來決定。
 
 
 
@@ -488,4 +523,70 @@
 
 
 
+
+
+
+ 
+
+### Developer Tools
+1. A startup is building a cloud-native web application on AWS. The development team, spread across multiple geographic locations, requires a collaborative development environment where they can write, run, and debug code together in real-time. They are considering AWS Cloud9 for this purpose. Which of the following benefits of AWS Cloud9 would best address the needs of the startup's distributed development team?
+
+    Answer: Leverage Cloud9's pre-configured development environments, allowing developers to start coding without the need for local machine setup, and ensuiring consistent development settings across the team.
+
+    This is one of the Cloud9's main advantages. It provides a cloud-based IDE that eliminates the "it works on machine" problem and ensures consistent, pre-configured enviornments that can be accessed from anywhere.
+
+2. A software company is rapidly expanding its cloud infrastructure on AWS. They are deploying multiple microservices, databases, and networking resources. The company's cloud engineering team is familiar with popular programming languages and wishes to use this expertise to define, compose, and share their cloud resources in a programmatic manner, avoiding manual setups on the AWS Management Console. Which AWS service would be the most effective solution for the cloud engineering team to define cloud resources using familiar programming languages?
+
+    Answer: Utilize AWS Cloud Developement Kit (CDK) to programmatically define cloud resources using familiar programming langurages and then synthesize them into CloudFormation templates for deploymemts.
+
+    (CloudFormation 是 IaC（Infrastructure as Code）核心工具，
+    但它：
+
+    不支援熟悉的 通用程式語言
+    無法用 function、迴圈、模組組合等方式提高可維護性
+    對「開發導向團隊」的體驗不佳（特別是快速擴張的開發團隊），故答案為CDK)
+
+3. A digital agency is building web applications for various clients and uses a continuous integration and continuous deployment (CI/CD) process. They store their code in AWS CodeCommit and want a solution that automatically compiles source code, runs tests, and produces software packages that are ready for deployment, whenever there's a new code push. They are considering AWS CodeBuild for this workflow. Which of the following describes the primary capability of AWS CodeBuild that makes it suitable for the agency's requirements?
+
+    a. Utilize AWS CodeBuild to automatically compile source code, run unit tests, and produce deployment artifacts every time there's a change in the source code repository. (O)
+    b. Implement AWS CodeBuild to **maintain version-controlled repositories**, offering Git-based workflows and source code storage. (X) -> **AWS CodeCommit** 
+
+4. A startup is developing a new software product and has a distributed team of developers located in various parts of the world. They are looking for a secure, scalable, and managed source control service that integrates seamlessly with AWS services for their CI/CD pipeline. They are evaluating AWS CodeCommit for this purpose. Which of the following best describes the primary functionality of AWS CodeCommit in addressing the startup's requirements?
+
+    a. Use AWS CodeCommit to automatically build and deploy code changes across mutiple AWS environments, providing a full CI/CD pipeline out-of-the-box. (X)
+
+    While AWS CodeCommit is part of the AWS CI/CD ecosystem, its primary function is as a source control service, not to build and deploy code. Services like AWS CodeBuild and AWS CodePipeline handle the building and deployment aspects.
+
+    b. Utilize AWS CodeCOmmit as a fully managed source control service, offering secure and scalable Git-based repositories, allowing developers to collaborate and store code efficently. (O)
+
+5. A tech company has a robust CI/CD system in place, with code stored in AWS CodeCommit and builds managed by AWS CodeBuild. As the next step in their CI/CD pipeline, they want an automated deployment service that can handle deployments to EC2 instances, on-premises instances, and serverless Lambda functions, ensuring minimal downtime and providing the ability to easily roll back if necessary. They are considering AWS CodeDeploy for this role. Which of the following describes the primary advantage of incorporating AWS CodeDeploy into their CI/CD pipeline?
+
+    Answer: Utilize AWS CodeDeploy to automate deployments across different enviornments, using features like blue/green deployments to minimize downtime and maintain a rollback capability.
+
+6. A development team at a SaaS company is in the process of designing a comprehensive CI/CD system. The team wants a solution that orchestrates a series of stages, including source control, build, test, and deployment, with seamless integration between AWS services and third-party tools. Their goal is to automate the entire software release process, ensuring consistent and rapid delivery of new features to their customers. Which AWS service would be the most appropriate choice to orchestrate and model the entire release process for the team's CI/CD pipeline?
+
+    Answer: Deploy AWS CodePipeline to model and visualize the entire release process, seamlessly integrating with tools like CodeCommit, CodeBuild and CodeDeploy to automate the stages of the CI/CD pipeline.
+
+
+
+
+
+
+
+### AWS Budget & AWS Cost Explorer, Amazon API Gateway
+1. A digital marketing agency has recently migrated its infrastructure to AWS. Given the variable nature of its projects and campaigns, the company's monthly cloud expenses can fluctuate significantly. The finance team wants a tool that not only monitors the current AWS spend but also forecasts potential overspends based on current trends, and **alerts designated** stakeholders when defined budget thresholds are approached or exceeded. Which AWS service would best cater to the agency's needs in monitoring, forecasting, and alerting on AWS expenditure?
+
+    a. Use AWS Cost Explorer to inspect historical AWS expenditure and identify trends, ensuring the finance team periodically checks of any spikes and costs. (X)
+
+    While AWS Cost Explorer is valuable for analyzing past spend and identifying cost patterns, it doesn't provide the proactive budget setting, forecasting, and alerting capabilityes the agency is seeking.
+
+    b. Implement AWS Budgets to define custom budget thresholds for expected AWS costs, recive alerts based on current expenditure trends, and forecast potential overspends. (O)
+
+2. A growing e-commerce company is utilizing several AWS services to run its online platform, including Amazon EC2, Amazon RDS, and Amazon S3. As the company scales, there's a noticeable increase in monthly AWS costs. The CFO wants a detailed breakdown of the company's AWS expenses to identify cost drivers and potential areas for optimization. Which AWS service should the company leverage to analyze their spending patterns, understand costs and usage across **different AWS services, and visualize this data over specific time periods**?
+
+    Answer: Leverage AWS Cost Explorer to drill down into the company's AWS expenses, analyze and visualize spending patterns, and get insights into cost drivers across different AWS services over custom time frames.
+
+3. A fintech startup offers a RESTful API to its clients, providing real-time access to financial data analytics. As their user base grows, they want to ensure that their backend services are not overwhelmed by too many requests, potentially degrading performance for all users. They also want to offer premium subscribers a higher request rate compared to free-tier users. Which AWS service should the startup implement to define and enforce varying request rates and burst capabilities based on user subscription tiers, and thereby **protect their backend systems** from potential traffic spikes?
+
+    Answer: Implement Amazon API Gateway, utilizing its built-in throttling rules to set different Rate and Burst limits for API methods, and apply these rules to different API key-based subscription tiers.
 

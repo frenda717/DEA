@@ -280,6 +280,9 @@
     • # 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑐𝑎𝑝𝑎𝑐𝑖𝑡𝑦= 
     \(\left( \frac{RCUS_{Total}}{3000} \right) + \left( \frac{WCUS_{Total}}{1000} \right)\)
 
+    <pre> $$ \left( \frac{RCUS_{Total}}{3000} \right) + \left( \frac{WCUS_{Total}}{1000} \right) $$ </pre>
+
+
     • # 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑠𝑖𝑧𝑒=𝑇𝑜𝑡𝑎𝑙 𝑆𝑖𝑧𝑒
     \(\frac {𝑇𝑜𝑡𝑎𝑙 𝑆𝑖𝑧𝑒}{10 GB}\)
 

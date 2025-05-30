@@ -289,6 +289,32 @@
     • # 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠=
     ceil(max# 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑐𝑎𝑝𝑎𝑐𝑖𝑡𝑦,# 𝑜𝑓 𝑝𝑎𝑟𝑡𝑖𝑡𝑖𝑜𝑛𝑠𝑏𝑦 𝑠𝑖𝑧𝑒 )
 
+    - Number of partitions by capacity:
+
+    $$
+    \text{\# of partitions}_{\text{by capacity}} =
+    \left( \frac{RCUS_{Total}}{3000} \right) +
+    \left( \frac{WCUS_{Total}}{1000} \right)
+    $$
+
+    - Number of partitions by size:
+
+    $$
+    \text{\# of partitions}_{\text{by size}} =
+    \frac{\text{Total Size}}{10\ \text{GB}}
+    $$
+
+    - Final number of partitions:
+
+    $$
+    \text{\# of partitions} =
+    \lceil \max\left(
+        \text{\# of partitions}_{\text{by capacity}},
+        \text{\# of partitions}_{\text{by size}}
+    \right) \rceil
+    $$
+
+
 
 
 ### Migration and Transfer

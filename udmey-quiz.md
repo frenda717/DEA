@@ -352,6 +352,117 @@
 
 
 
+2. A developer notices that their application is frequently receiving ProvisionedThroughputExceededException errors when interacting with a DynamoDB table. What could be a potential cause for these errors?
+
+    a. The DynamoDB table has reached its maimum storage limit.(X)
+    DynamoDB is managed service that automatically scales storage, and tables do not have a maximum storage limit. Hence, reaching a storage limit isn't a cause for ProvisionedThrooughputExceededException.
+    
+    b. The application's requests are exceeding the provisoned read capacity units (RCU) or write capacity units (WCU) for the table. (O)
+
+3. A developer is designing a DynamoDB table for an application that tracks user comments on various articles. Each user can comment on multiple articles. The primary key of the table uses UserID as the partition key and CommentID as the sort key. To efficiently retrieve all comments for a specific article, which optimization should the developer apply?
+
+    a. Create a Global Secondary Index(GSI) with ArticleID as the partition key. (O)
+    This is the correct answer. Creating a GSI with ArticleID as the partition key allows for efficient retrieval of all comments for a specific article, irrespective of the user.
+
+    b. Create a Local Secondary Index(LSI) with AritcalID as the partition key. (X)
+    c. Add an additional attribute ArticleID to the primary key of the table. (X)
+
+    當設計 DynamoDB 資料表用來追蹤使用者對文章的評論時，若主鍵使用 UserID 作為 partition key、CommentID 作為 sort key，則這樣的設計有利於根據「使用者」查詢其所有評論。但若想要依照文章（ArticleID）查詢所有相關評論，這個設計就不夠有效率。因此要進行優化。
+    所以a. Create a Global Secondary Index (GSI) with ArticleID as the partition key.
+    
+    說明：
+    建立 GSI，並以 ArticleID 作為 partition key，這是解決此需求的最佳方式。因為：
+    - **GSI 允許使用不同於主鍵的方式來查詢資料**。
+    - 以 ArticleID 作為 GSI 的 partition key，可以讓我們有效率地查詢某篇文章底下的所有評論（不論是誰發的）。
+    - **可以加入其他欄位作為 GSI 的 sort key，例如 CommentID 或 Timestamp**，以提供更進階的排序或查詢能力。
+
+    為何是正確答案：
+    這可以有效實現「快速查詢某篇文章所有評論」的需求，完全解耦主鍵中 UserID 的限制。
+
+
+    ❌ b. Create a Local Secondary Index (LSI) with ArticleID as the partition key.
+    說明：
+    **LSI 必須使用與主鍵相同的 partition key**（也就是 UserID），僅能更換 sort key，因此不能將 ArticleID 當作 partition key 使用。
+
+    為何是錯誤答案：
+    你無法用 LSI 改變 partition key，所以無法實現跨使用者查詢同一篇文章評論的需求。
+
+    ❌ c. Add an additional attribute ArticleID to the primary key of the table.
+    說明：
+    你不能在 DynamoDB 的主鍵中加入第三個欄位（DynamoDB primary key 只能由 partition key 和 sort key 組成）。
+
+    你可以把 ArticleID 包含在 sort key 中（例如複合 key CommentID#ArticleID），但這會導致查詢複雜、效率不高，而且仍舊受到 partition key（UserID）的限制。
+
+    為何是錯誤答案：
+    這不會幫助你以 ArticleID 為基礎來查詢評論，因為查詢仍被限制於 UserID 分區內。
+
+4. An e-commerce application frequently reads popular product details from a DynamoDB table, causing **occasional** spikes in read capacity. To improve read performance and reduce read latencies for these frequently accessed items, which solution should be implemented?
+
+    key word: occassional, 從velocity的角度來看，只是暫時性的頻繁讀取
+    a. Introduce **DynamoDB Accelerator (DAX**) for **caching frequently read data**. (O)
+    This is the correct answer. DynamoDB Accelerator (DAX) is a fully managed, in-memory cache that can reduce Amazon DynamoDB response times from milliseconds to microseconds for read-heavy applications.
+
+    DynamoDB Accelerator (DAX) solves the "hot key" problem (too many reads)
+
+    b. Increase the provisioned read capacity units (RCU) of the table ~~permanently~~. (X)
+    Increasing the provisioned RCU might help in avoiding throttling, but it doesn't optimize for read latency, especially for frequently accessed items. 
+
+5. A mobile application allows users to post and edit reviews for different restaurants. The team wants to maintain an activity log for all changes made to the reviews in a separate system for analytics and auditing purposes. Which DynamoDB feature can be used to capture and process every modification made to the reviews?
+
+    a. DynamoDB On-Demand Backups. (X)
+    DynamoDB On-Demand Backups allow for creating full backups of your tables for **long-term retention and archival**, but they are **not suited for real-time capture of item-level changes**.
+
+    b. DynamoDB Streams (O)
+    DynamoDB Streams capture changes to items in a DynamoDB table, allowing applications to consume and process the change data in real-time. Each events is represented by a stream record, perfect for the described use case of tracking modifications.
+
+6. In a data engineering pipeline, a team is processing large volumes of event data stored in a DynamoDB table. This event data is relevant only for 30 days, after which it should be automatically deleted to save on storage costs and ensure GDPR compliance. Which DynamoDB feature can be leveraged to efficiently and automatically remove outdated event data?
+
+    Answer: DynamoDB Time to Live (TTL)
+    **DynamoDB Time to Live (TTL) allows users to define a specific timestamp for when an item should be deleted from the table**. Any item with a past timestamp will be automatically deleted, making it perfect for the described scenario.
+
+7. A company stores vast amounts of historical transaction data in Amazon S3 as Parquet files. While they primarily use Amazon Redshift for their day-to-day analytics, they occasionally need to run complex analytical queries that combine live data in Redshift with the historical data in S3. Which feature of Amazon Redshift allows them to query data directly from S3 without needing to load it into their Redshift cluster?
+
+    a. Redshift Concurrency Scaling. (X)
+    Redshit Concurrency Scaling enables the Redshift cluster to handle more concurrent queries by adding additional query capacity. It doesn't concern querying daa directly from S3.
+
+    b. Redshift Data Sharing. (X)
+    Redshift Data Sharing allows for **sharing data between different Redshift clusters without duplicating data**. It is unrelated to quering data from S3.
+
+    c. Redshift Specturm. (O)
+    **Redshift Spectrum allows users to run SQL queries against exabytes of data in Amazon S3**. It can combine S3 data in the Redshift cluster, providing a seamless querying experience without the need to load or transform any data.
+
+8. A company is building a dashboard that frequently queries a large Amazon Redshift table to display monthly sales metrics by region. The table has millions of rows and several columns including SaleDate, Region, and Amount. To optimize query performance and minimize data distribution and shuffling across nodes, which combination of distribution style and sort key should be chosen for the table?
+
+    Answer: Distribution Style: KEY on Region; Sort Key: SaleDate
+
+    A **KEY distribution** style on Region column ensures that all sales data for a particular region **resides on the same node**, optimizing join and aggregation operations. Using SaleDate as the sort key optimizes range-based queries, especially when fetching monthly sales metircs. 
+
+9. A financial firm has a mission-critical application that interacts with an Amazon RDS instance for real-time read-only data analytics. During peak times, some non-essential batch processing jobs are causing contention for resources, leading to degraded performance for the main application. Which of the following approaches can be implemented to ensure the primary application maintains optimal performance during these peak periods?
+
+    a. Implement AWS Lambda with Amazon CloudWatch alarms to monitor and automatically terminate long-running non-essential queries. (X)
+    While AWS Lambda combined with CloudWatch alarms can be used to handle long-running queries, it does not prevent the contention from occurring in the first place. The primary application might still face performance issues during the time a long query runs before it's terminated.
+
+    b. Set up an RDS Read Replica, and direct the batch queries to it.
+
+10. A multinational company stores its customer data in an Amazon Aurora PostgreSQL-Compatible Edition database, while their sales transaction data is stored in an Amazon Redshift cluster. For monthly reporting, the company wants to combine customer profiles with their transaction data without running a daily ETL job. Which feature of Amazon Redshift allows analysts to efficiently query and combine data from both sources in real-time?
+
+    a. Redshift Data Lake Export (X)
+    Redshift Data Lake Export allows userss to export data from Redshift to S3 in Parquet format. It doesn't faciliate quering data in external relational databases.
+
+    b. **Redshift Federated Queries**. (O)
+    This allow users to **run SQL querires in Redshift access** and **combine data from both Redshift and Amazon RDS/Aurora databases without ETL**, providing a seamless experience for quering data across systems. (O)
+
+11. An online news portal is planning to create a content management system (CMS) to store and manage hundreds of thousands of articles, images, and multimedia files. The content has various attributes, and the schema might evolve as new content types get introduced. The application requires a flexible schema and high throughput for read and write operations. Which Amazon database service is best suited for this use case?
+    
+    Answer: Amazon DocumentDB
+
+    Amazon DocumentDB is a fully managed document database service that supports MongoDB workloads. It is designed to handle flexible schema and can efficiently store, query, and index JSOn-like data, making it and ideal choice for a CMS with envolving content stuctures.
+
+
+
+
+
+
 ### Migration and Transfer
 
 1. You are a solutions architect designing a migration plan for a company's on-premises data center to AWS. The company's CIO wants to understand their current environment, including server utilization and dependencies, before starting the migration. Which of the following statements about the AWS Application Discovery Service (ADS) is accurate?
@@ -589,4 +700,81 @@
 3. A fintech startup offers a RESTful API to its clients, providing real-time access to financial data analytics. As their user base grows, they want to ensure that their backend services are not overwhelmed by too many requests, potentially degrading performance for all users. They also want to offer premium subscribers a higher request rate compared to free-tier users. Which AWS service should the startup implement to define and enforce varying request rates and burst capabilities based on user subscription tiers, and thereby **protect their backend systems** from potential traffic spikes?
 
     Answer: Implement Amazon API Gateway, utilizing its built-in throttling rules to set different Rate and Burst limits for API methods, and apply these rules to different API key-based subscription tiers.
+
+### Machine Learning
+1. A data science team at a retail company wants to streamline the process of data preparation for their machine learning models. They often deal with a mix of structured and unstructured data from various sources like relational databases, data lakes, and third-party APIs. The team has learned about Amazon SageMaker Data Wrangler and is considering using it for their data preparation tasks. Which of the following describes the best utilization of SageMaker Data Wrangler for the team's requirements?
+    
+    Answer: Implement SageMaker Data Wangler to design data flows for importing, cleaning, and transforming data from diverse sources, and then export the prepared data for analysis or traning in SageMaker.
+
+2. An e-commerce company is building a recommendation system using Amazon SageMaker. The data science team wants to manage, discover, and share features used in their machine learning models efficiently, ensuring consistency across training and real-time prediction workflows. They are considering the use of Amazon SageMaker Feature Store for this purpose. Which of the following describes the optimal utilization of SageMaker Feature Store in this context?
+   
+    a. Integrate SageMaker Feature Store to save, discover and share curated features, ensuring consistency between traning datasets and real-time feature vectors used for predictions. (O)
+
+    SageMaker Feature Store is designed to store feature data in a consistent manner, ensuring that the same features used during model traning are available and consistent for real-time predictions.
+
+    b. Use SageMaker Feature Store to serve the recommendation model in real-time to the e-commerce platform, ~~bypassing(繞過)~~ the need for SageMaker endpoints. (X)
+
+    SageMaker Feature Store 是設計來 儲存與檢索 features 的，不是用來「serving 模型」的。
+    你仍然需要使用 SageMaker Endpoint 或其他推論服務 來部署與執行模型。
+    Feature Store 可以在推論之前提供 features，但它不會執行模型推論或模型服務。
+
+3. A financial analytics firm is working on developing predictive models to forecast stock market trends. They have historical data stored in an Amazon RDS database and real-time stock market data streaming via Amazon Kinesis. To build, train, and deploy their machine learning models, they are considering Amazon SageMaker. Which of the following workflows would be the most effective in building a comprehensive data pipeline that includes Amazon SageMaker?
+
+    a. Extract historical data from the RDS database and the real-time data from Kinesis into an Amazon S3 bucket. Use SageMaker to access this data, preprocess it, train the model, and then deploy the model for real-time and batch predictions. (O)
+
+    This approach is efficient because it centralizeds the data in S3, which SageMaker can natively access. Preprocessiong, traning, and deploying SageMaker ensures a streamlined workflow. This setup also allows flexibility in handling both real-time and batch processing use cases.
+
+    b. Use SageMaker to periodically pull data  ~~directly~~ from the RDS database and Kinesis stream, run batch traning jobs, and ~~overwirte~~ the previously deployed model with a new version on every update. (X)
+
+    問題 1：SageMaker **不適合「直接」從資料來源拉資料**
+    SageMaker 本身不是 ETL 工具，它不會自動與 RDS 或 Kinesis 建立連接來拉資料。
+
+    雖然你「技術上可以」寫自訂程式碼連接 RDS/Kinesis，但這不是推薦做法：
+    - 增加開發與維護複雜度
+    - 容易產生資料一致性與可靠性問題
+    - 缺乏彈性與重用性
+
+    ✅ 最佳實踐是透過中介存儲（如 Amazon S3）統一管理資料，作為 SageMaker 的訓練與推論輸入來源。
+
+    🔻 問題 2：直接覆蓋模型會造成風險
+    - 每次訓練後直接 覆寫已部署模型（without versioning）是一種高風險作法：
+    - 可能導致意外部署不穩定模型
+    - 沒有版本控制、不易回滾
+    - 無法做 A/B testing、或模型監控對比
+
+    ✅ 好的 MLOps 實踐應包括：
+
+    模型版本管理
+    評估後再部署
+    支援灰度發布或多版本並存
+
+4. A pharmaceutical company is developing complex machine learning models to predict the effectiveness of new drug compounds. Given the critical nature of their work and the regulatory requirements, it's essential for them to maintain full transparency and traceability of their ML experiments — from data sources and preprocessing steps to model training parameters and results. Which of the following Amazon SageMaker features would best address the company's need for comprehensive traceability throughout their ML workflow?
+
+    Answer:  Leverage SageMaker Lineage Tracking to automatically track and record the lineage of ML workflows, providing a graphical view of the relationships between artifacts, actions and executions.
+
+5. A fintech company is building a machine learning model to detect fraudulent transactions in real-time. They stream transaction data through Amazon Kinesis and are considering ways to efficiently ingest this data, engineer features, and feed it into their SageMaker model for both real-time predictions and periodic re-training. Which of the following workflows optimally incorporates SageMaker Feature Store to facilitate this process?
+
+    a. Ingest streaming data from Kinesis into SageMaker Feature Store, periodically exporting the features to an S3 bucket. Use SageMaker to train the model on data from this bucket and deploy it for real-time predictions. (O)
+    b. Stream transaction data from Kinesis to an intermediate Amazon ~~RDS~~ database. Periodically, load this data into SageMaker Feature Store and train model directly from the RDS database. (X)
+    錯誤點 1：使用 RDS 做為中介不符實時與可擴展架構
+    RDS 是 OLTP 系統，非最佳資料湖或中介層。
+
+    把 streaming data 寫入 RDS：
+
+    ✘ 效率低，對寫入壓力不耐用（非為高頻寫入設計）
+    ✘ 實時查詢不穩定，會有 IOPS 上限
+    ✘ 不易與 SageMaker 整合做大規模訓練（需額外 ETL）
+
+    ✅ 更好的方式是先寫入 Feature Store 或 S3 這類針對 ML 設計的儲存層。
+
+     錯誤點 2：繞過 Feature Store 做訓練不符合一致性原則
+    選項中提到：
+    "train model directly from the RDS database"
+
+    這意味著訓練資料和 Feature Store 資料不同步：
+    ✘ 造成 訓練資料與推論時使用的 features 不一致
+    ✘ 可能導致 "training-serving skew"（訓練與推論資料不一致，模型預測失準）
+
+    ✅ 使用 Feature Store 為唯一來源（single source of truth），可確保訓練和推論都使用同一組 features。
+
 

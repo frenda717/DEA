@@ -270,9 +270,90 @@
 
     Answer: Use AWS Backup to centrally manage backups across the metioned AWS resources.
 
-11. 
+11. An online gaming application has a large chunk of its traffic coming from users who download static assets such as historic leaderboard reports and the game tactics for various games. The current infrastructure and design are unable to handle the traffic and application freezes on most of the pages.
+
+    Which of the following is a cost-optimal solution that requires the LEAST operational overhead?
+
+    a. Use Amazon CloudFront with Amazon S3 as the storage solution for the static assets. (O)
+
+    When you put your content in an Amazon S3 bucket in the cloud, a lot of things become much easier. First, you don’t need to plan for and allocate a specific amount of storage space because Amazon S3 buckets scale automatically. As Amazon S3 is a serverless service, you don’t need to manage or patch servers that store files yourself; you just put and get your content. Finally, even if you require a server for your application (for example, because you have a dynamic application), the server can be smaller because it doesn’t have to handle requests for static content.
+
+    Amazon CloudFront is a content delivery network (CDN) service that delivers static and dynamic web content, video streams, and APIs around the world, securely and at scale. By design, delivering data out of Amazon CloudFront can be more cost-effective than delivering it from Amazon S3 directly to your users. Amazon CloudFront serves content through a worldwide network of data centers called Edge Locations. Using edge servers to cache and serve content improves performance by providing content closer to where viewers are located.
+
+    When a user requests content that you serve with Amazon CloudFront, their request is routed to a nearby Edge Location. If Amazon CloudFront has a cached copy of the requested file, CloudFront delivers it to the user, providing a fast (low-latency) response. If the file they’ve requested isn’t yet cached, CloudFront retrieves it from your origin – for example, the Amazon S3 bucket where you’ve stored your content. Then, for the next local request for the same content, it’s already cached nearby and can be served immediately.
+
+    By caching your content in Edge Locations, Amazon CloudFront reduces the load on your Amazon S3 bucket and helps ensure a faster response for your users when they request content. Also, data transfer out for content by using Amazon CloudFront is often more cost-effective than serving files directly from Amazon S3, and there is no data transfer fee from Amazon S3 to Amazon CloudFront. You only pay for what is delivered to the internet from Amazon CloudFront, plus request fees.
 
 
+    b. Configure AMS Lambda with and Amazon RDS database to provide a serverless architecture. (X)
+
+    Amazon RDS is not the right choice for the given scenario because of the overhead of a database management system, as the given use-case can be addressed by using the Amazon S3 storage solution.
+    (存儲的大多是圖片這種item, 放在S3較洽當 跟RDS無關)
+
+    
+
+12. A data engineering team has deployed a microservice to the Amazon Elastic Container Service (Amazon ECS). The application layer is in a Docker container that provides both static and dynamic content through an Application Load Balancer. With increasing load, the Amazon ECS cluster is experiencing higher network usage. The team has looked into the network usage and found that 90% of it is due to distributing static content of the application.
+
+    What do you recommend to improve the application's network usage and decrease costs?
+
+    a. Distribute the static content through Amazon S3 (O)
+    b. Distribute the static content through EFS (X)
+    c. Distribute the dynamic content through EFS (X)
+    
+    b. & c: See Storage-EC2 Instance Storage Section-EFS (Elastic File System)
+
+    Amazon Elastic File System (Amazon EFS) provides a simple, scalable, fully managed elastic NFS file system for use with AWS Cloud services and on-premises resources. **Using Amazon EFS for static or dynamic content will not change anything as static content on EFS would still have to be distributed by the Amazon ECS instances.**
+
+    Amazon EFS（Elastic File System） 是一種用於 EC2 和 ECS 等服務的 **網路附加儲存（NFS） 解決方案**。
+    如果你把靜態內容（如 HTML、CSS、JS、圖片）放在 EFS 上，ECS 容器**還是必須經由網路從 EFS 讀取這些檔案，再透過 Application Load Balancer 傳送給用戶端**。
+    這種方式 無法減少 ECS 的網路流量或成本，反而可能增加延遲與負擔，因為流量還是流經 ECS。
+
+    此外，EFS 並不會「分發」動態內容，它只是儲存資料的地方，像是上傳的檔案或暫存資料。
+    如果你把動態內容「儲存在」EFS 上，ECS 還是需要經由網路去讀取/寫入這些資料，這不會減少 ECS 網路負載，反而可能讓回應時間變慢。
+    再者，「動態內容」應該由後端服務產生，不適合靠 EFS 這種儲存系統來「分發」。
+    
+    References:
+
+    https://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html
+
+13. A company makes use of multiple AWS Lambda functions for implementing various business requirements. These Lambda functions use code from common custom Python scripts that are also maintained by a data engineer along with the Lambda functions. The data engineer is looking for a solution to reduce the operational/maintenance work of updating the code in the Lambda functions when a change has to be made in the scripts.
+
+    What is the most efficient way of implementing this change ?
+
+    Answer: Package the custom Python scripts into Lambda layers. Apply the Lambda layers to all the AWS Lambda functions using the scripts.
+
+    A Lambda layer is a .zip file archive that contains supplementary code or data. Layers usually contain library dependencies, a custom runtime, or configuration files. There are multiple reasons why you might consider using layers: To reduce the size of your deployment packages, To separate core function logic from dependencies, To share dependencies across multiple functions, and To use the Lambda console code editor.
+
+    You can include up to five layers per function. Also, you can use layers only with Lambda functions deployed as a .zip file archive. For functions defined as a container image, package your preferred runtime and all code dependencies when you create the container image.
+
+    Working with Lambda layers:
+
+    ![Lambda Layer](./image/lambda_layer.png "Lambda Layer")
+
+
+14. The IT department at a company is conducting a training workshop for new data engineers. As part of an evaluation exercise on Amazon S3, the new data engineers were asked to identify the invalid storage class lifecycle transitions for objects stored on Amazon S3.
+
+    Can you identify the **INVALID** lifecycle transitions from the options below? (Select two) ?
+
+    a. Amazon S3 Standard-IA => Amazon S3 Intelligent-Tiering (O)
+    b. Amazon S3 Intelligent-Tiering => Amazon S3 Standard (X)
+    c. Amazon S3 One Zone-IA=> Amazon S3 Standard (X)
+    d. Amazon S3 Standard => Amazon S3 Intelligent-Tiering (O)
+    e. Amazon S3 Standard-IA => Amazon S3 One Zone-IA (O)
+
+    Answer: b & c
+
+    Here are the supported life cycle transitions for S3 storage classes - The S3 Standard storage class to any other storage class. Any storage class to the S3 Glacier or S3 Glacier Deep Archive storage classes. The S3 Standard-IA storage class to the S3 Intelligent-Tiering or S3 One Zone-IA storage classes. The S3 Intelligent-Tiering storage class to the S3 One Zone-IA storage class. The S3 Glacier storage class to the S3 Glacier Deep Archive storage class.
+
+    Amazon S3 supports a waterfall model for transitioning between storage classes, as shown in the diagram below:
+
+    ![S3 Lifecycle](./image/S3_lifecycle.jpg "S3 Lifecycle")    
+
+    S3 Standard => S3 Standard-IA => S3 Intelligent-Tiering => S3 One Zone-IA => S3 Glacier Instant Retrieval => S3 Glacier Flexible Retrieval => S3 Glacier Deep Archive
+
+    Reference:
+
+    https://docs.aws.amazon.com/AmazonS3/latest/dev/lifecycle-transition-general-considerations.html
 
 ### Database
 1. (See DynamoDB – Partitions Internal) 
@@ -350,7 +431,15 @@
         ✅ 解答：C
         DynamoDB 的 partition 是根據 容量和大小中較大的需求 來決定。
 
+2. A data engineer is provisioning a DynamoDB table for an e-commerce application. The engineer is planning to allocate 500 Write Capacity Units, 5000 Read Capacity Units, and 50GB of space for this table.
 
+    How many partitions will be created in the table for this requirement?
+
+    Answer:5 Partitions
+
+    Partitions by capacity: Roundup[(500WCU/1000WCU) + (5000RCU/3000RCU)] = 3 partitions
+    Partitions by size: 50GB/10GB=5 partitions
+    max(3,5) = 5 partitions
 
 2. A developer notices that their application is frequently receiving ProvisionedThroughputExceededException errors when interacting with a DynamoDB table. What could be a potential cause for these errors?
 
@@ -457,6 +546,18 @@
     Answer: Amazon DocumentDB
 
     Amazon DocumentDB is a fully managed document database service that supports MongoDB workloads. It is designed to handle flexible schema and can efficiently store, query, and index JSOn-like data, making it and ideal choice for a CMS with envolving content stuctures.
+
+
+12. A company uses Amazon Redshift as their data warehouse service in the cloud. The performance of the Redshift cluster needs improvement and the company decided to **scale read and write capacity to meet the user demand**. The cluster runs on RA3 nodes.
+
+    As a data engineer, which solution will you use to turn on the concurrency scaling of the cluster?
+
+    a. Enable Short query acceleration (SQA) to concurrently run queries and therby improve the concurrency scalling of the cluster. (X)
+
+    Short query acceleration (SQA) **prioritizes selected short-running queries ahead of longer-running queries**. SQA runs short-running queries in a dedicated space so that SQA queries aren't forced to wait in queues behind longer queries. If you enable SQA, you can reduce workload management (WLM) queues that are dedicated to running short queries. In addition, long-running queries don't need to contend with short queries for slots in a queue, so you can configure your WLM queues to use fewer query slots. SQA does not affect write operations, so this option is incorrect for the given use case.
+
+
+    b. Enable workload manager(WLM) queue as a concurrency scaling queue. Set the Concurrency Scaling mode value to auto. (O)
 
 
 
@@ -638,50 +739,310 @@
 
 
  
+### Compute
+1. You are designing a data engineering pipeline that will process vast amounts of data and also train complex machine learning models on this data. Given the computational demands of machine learning training, especially with deep learning models, which EC2 instance type would be most suitable for your use case?
 
-### Developer Tools
-1. A startup is building a cloud-native web application on AWS. The development team, spread across multiple geographic locations, requires a collaborative development environment where they can write, run, and debug code together in real-time. They are considering AWS Cloud9 for this purpose. Which of the following benefits of AWS Cloud9 would best address the needs of the startup's distributed development team?
+    Answer: p3.2xlarge
 
-    Answer: Leverage Cloud9's pre-configured development environments, allowing developers to start coding without the need for local machine setup, and ensuiring consistent development settings across the team.
+    p3.2xlarge instances come with NVIDIA Tesla V100 GPUs, making them ideal for machine leaning and other compute-intensive tasks that can benefit from GPU acceleration.
 
-    This is one of the Cloud9's main advantages. It provides a cloud-based IDE that eliminates the "it works on machine" problem and ensures consistent, pre-configured enviornments that can be accessed from anywhere.
+2. A company has deployed an AWS Lambda function to process streaming data from Amazon Kinesis. Recently, they have noticed that the performance of their Lambda function degrades over time, particularly when **handling larger volumes of data**. The Lambda function is configured with **default memory settings** and uses Python as its runtime. Which of the following steps should the company take to best address the performance degradation?
 
-2. A software company is rapidly expanding its cloud infrastructure on AWS. They are deploying multiple microservices, databases, and networking resources. The company's cloud engineering team is familiar with popular programming languages and wishes to use this expertise to define, compose, and share their cloud resources in a programmatic manner, avoiding manual setups on the AWS Management Console. Which AWS service would be the most effective solution for the cloud engineering team to define cloud resources using familiar programming languages?
+    a. Implement AWS Lambda layers for the function dependencies. (X)
 
-    Answer: Utilize AWS Cloud Developement Kit (CDK) to programmatically define cloud resources using familiar programming langurages and then synthesize them into CloudFormation templates for deploymemts.
+    AWS Lambda layers are a good way to manage and optimize the deployment of function dependencies, but they **primarily help with reducing the deployment package size and separation of dependencies**. They do not directly impact the performance related to the processiong of larger volumes of data.
 
-    (CloudFormation 是 IaC（Infrastructure as Code）核心工具，
-    但它：
+    b. Increase the memory allocation to the Lambda function. (O)
 
-    不支援熟悉的 通用程式語言
-    無法用 function、迴圈、模組組合等方式提高可維護性
-    對「開發導向團隊」的體驗不佳（特別是快速擴張的開發團隊），故答案為CDK)
+    Increasing the memory allocation can help improve the performance of the Lambda function because **AWS Lambda allocates GPU power linearly in proportion to the amount of memory configured**. More memory means more CPU power, which can help in processing larger volumes of data more efficiently. This is particularly important in applications dealing with streaming data, which may need more computation power to process data quickly as volumes increase.
 
-3. A digital agency is building web applications for various clients and uses a continuous integration and continuous deployment (CI/CD) process. They store their code in AWS CodeCommit and want a solution that automatically compiles source code, runs tests, and produces software packages that are ready for deployment, whenever there's a new code push. They are considering AWS CodeBuild for this workflow. Which of the following describes the primary capability of AWS CodeBuild that makes it suitable for the agency's requirements?
+3. You are developing a data engineering pipeline that leverages AWS Lambda to process large datasets. Given the Lambda function's storage constraints, you want to temporarily mount additional storage to the Lambda environment during execution to handle intermediary processing files. How would you achieve this within the AWS Lambda execution environment?
 
-    a. Utilize AWS CodeBuild to automatically compile source code, run unit tests, and produce deployment artifacts every time there's a change in the source code repository. (O)
-    b. Implement AWS CodeBuild to **maintain version-controlled repositories**, offering Git-based workflows and source code storage. (X) -> **AWS CodeCommit** 
+    a. Mount and Amazon EFS (Elastic File System) volume to the AWS Lambda function to leverage the scalable storage. (O)
 
-4. A startup is developing a new software product and has a distributed team of developers located in various parts of the world. They are looking for a secure, scalable, and managed source control service that integrates seamlessly with AWS services for their CI/CD pipeline. They are evaluating AWS CodeCommit for this purpose. Which of the following best describes the primary functionality of AWS CodeCommit in addressing the startup's requirements?
+    AWS Lambda allows you to mount an Amazon EFS file system, enabling you to have access to scalable storage directly from your Lambda function. This is useful for scenarios where you need more storage for processing that what is available in the Lambda encironment by default.
 
-    a. Use AWS CodeCommit to automatically build and deploy code changes across mutiple AWS environments, providing a full CI/CD pipeline out-of-the-box. (X)
+    b. Allocate additional ephermeral storage to the Lambda function during configuration. (X)
+    這個選項說的是錯的，但實際上，它是部分正確但非最佳答案，在某些情況下可以用，但不符合題目的需求：「temporarily mount additional storage」。
 
-    While AWS CodeCommit is part of the AWS CI/CD ecosystem, its primary function is as a source control service, not to build and deploy code. Services like AWS CodeBuild and AWS CodePipeline handle the building and deployment aspects.
+    AWS Lambda 的確允許配置 ephemeral storage（/tmp 目錄）最大達到 10 GB（預設是 512 MB），這是在配置函數時可以設定的。
+    然而這個 ephemeral storage 是 本地磁碟（/tmp）空間，不能「mount」額外的儲存來源，而且是 非持久性 的。
+    更重要的是，這不是可以在執行時動態掛載的 storage，也不是scalable如題目所述。
 
-    b. Utilize AWS CodeCOmmit as a fully managed source control service, offering secure and scalable Git-based repositories, allowing developers to collaborate and store code efficently. (O)
+    c. Attach and ~~Amazon EBS (Elastic Block Store)~~ volume to the Lambda function to gain additional storage space. (X)
+    
+    AWS Lambda 無法直接附加 EBS（Elastic Block Store） 卷。
+    EBS 是設計給 EC2 使用的區塊儲存裝置，只能掛載到 EC2 執行個體（或某些容器化服務），Lambda 並不支援掛載 EBS。
+    所以這個選項是完全錯誤的，Lambda 無法與 EBS 整合。
 
-5. A tech company has a robust CI/CD system in place, with code stored in AWS CodeCommit and builds managed by AWS CodeBuild. As the next step in their CI/CD pipeline, they want an automated deployment service that can handle deployments to EC2 instances, on-premises instances, and serverless Lambda functions, ensuring minimal downtime and providing the ability to easily roll back if necessary. They are considering AWS CodeDeploy for this role. Which of the following describes the primary advantage of incorporating AWS CodeDeploy into their CI/CD pipeline?
+4. You are building a serverless data pipeline that leverages multiple AWS services, including AWS Lambda, Amazon DynamoDB, and Amazon S3. The pipeline is designed to ingest data from various sources, process it, and then store it for analytics. You need a streamlined and repeatable process to package and deploy all components of your serverless architecture. Which AWS tool is BEST suited for defining, packaging, and deploying this serverless data pipeline?
 
-    Answer: Utilize AWS CodeDeploy to automate deployments across different enviornments, using features like blue/green deployments to minimize downtime and maintain a rollback capability.
+    Answer: AWS Serverless Application Model (SAM)
 
-6. A development team at a SaaS company is in the process of designing a comprehensive CI/CD system. The team wants a solution that orchestrates a series of stages, including source control, build, test, and deployment, with seamless integration between AWS services and third-party tools. Their goal is to automate the entire software release process, ensuring consistent and rapid delivery of new features to their customers. Which AWS service would be the most appropriate choice to orchestrate and model the entire release process for the team's CI/CD pipeline?
+    SAM is an open-source framework specifically designed for building serverless applications. It simplifies the process of defining serverless resources, and its CLI provides tools for packaging and deploying serverless applications.
 
-    Answer: Deploy AWS CodePipeline to model and visualize the entire release process, seamlessly integrating with tools like CodeCommit, CodeBuild and CodeDeploy to automate the stages of the CI/CD pipeline.
+5. A financial services firm receives real-time transaction data from various international partners. Due to the disparate formats and schemas of the incoming data, the firm requires a solution that can execute custom code to standardize and transform this data as it is received, before storing it in a centralized data lake. The solution should be able to scale automatically based on the volume of incoming data and operate with low latency. Which AWS service is BEST suited for this real-time data processing requirement?
+
+    a. AWS Lambda (O)
+
+    AWS Lambda is designed to execute custom code in response to events.
+
+    b. Amazon Kinesis Data Streams (X)
+
+    Kinesis Data Streams 本身是用來接收與傳送大量即時資料流，但它：
+    不執行自定義程式碼：Kinesis 本身不負責資料處理或轉換邏輯，它只是資料的「通道」。
+
+    需搭配其他服務：若要轉換資料，你通常還需搭配：
+
+    - AWS Lambda（來執行轉換邏輯）或
+    - Kinesis Data Analytics（做 SQL 式分析）
+    - 或寫 consumer application（跑在 EC2、Fargate 上）
+    
+    Kinesis 只是「資料管線的一部分」，本身無法獨立完成「執行自定義程式碼」這件事。
+
+6. A genomic research institute is working on a project that requires the analysis of thousands of DNA sequences. Each DNA sequence is processed using the same computational task, but the tasks are independent of each other. The institute is looking for a cost-effective AWS service that can manage and scale the required compute resources based on the job queue, without the need for manual intervention.
+
+    The volume of data and the processing required is extensive and varies day by day. The solution needs to efficiently manage compute resources and scale according to the workload.
+
+    Which AWS service is BEST suited for executing these **high-throughput batch computing workloads**?
+
+    Answer:  AWS Batch
+
+
+
+
+### Containers
+1. A data engineering team is leveraging a Kubernetes-based solution for its data processing workloads on Amazon EKS. Recently, they encountered a challenge where their data processing pods need to share persistent storage for stateful applications, and this storage should be available even if the pod is rescheduled or moved to another node in the EKS cluster. Which storage solution should the team use to address this specific requirement within Amazon EKS?
+
+    a. Amazon EFS (Elastic File System) - Use dynamic provisioning to automatically create EFS volumes and mount them to pods as needed. (O)
+
+    Amazon EFS Provides a shared file system that can be mounted on multiple EKS worker nodes simultaneously. With dynamic provisioning, EFS volumes can be automatically created and mounted to pods, ensuring that even if a pod is rescheduled, it can sitll access hte same persistent storage.
+
+    b. Amazon EBS(Elastic Block Store) - Attach EBS volumes to the EKS worker nodes and manullay manage the data locality. (X)
+
+    Amazon EBS 是區塊儲存（block storage），主要問題在於它的區域性（node-local）和非共享性（non-shared）：
+
+       - EBS 只能同時掛載到一個 EC2 執行個體（EKS 節點）
+           - 雖然有「多附加」（Multi-Attach）功能，但僅限於某些場景和使用限制。
+           - 在大多數 Kubernetes 實作中，EBS 卷預設是只能綁定到單一 pod 所在的節點。
+
+       - 若 pod 移動到不同的 node
+           - Volume 必須卸載再重掛載（detach/attach），這會產生 高延遲和風險。
+           - 有可能導致資料一致性問題或容器啟動失敗。
+
+       - 不適合多個 pod 之間共享存取
+           - 對於需要共享儲存的 stateful 應用（如 Spark、Hadoop、Kafka、ETL pipeline），EBS 完全不適合，因為它不是網路檔案系統（NFS-style）。
+
+    | 項目            | Amazon EFS     | Amazon EBS      |
+    | ------------- | -------------- | --------------- |
+    | 是否支援多 node 掛載 | ✅ 是（多 pod、共享）  | ❌ 否（限單一 node）   |
+    | 適用於共享儲存需求     | ✅ 非常適合         | ❌ 不適合           |
+    | pod 移動時存取資料   | ✅ 可自動掛載相同路徑    | ⚠️ 需卸載+重掛載，容易出錯 |
+    | Kubernetes 整合 | ✅ 支援 CSI + PVC | ✅ 但具地區性限制       |
+
+2. A company is deploying a microservices architecture on Amazon EKS. As the system complexity grows, the team notices the need to segment network traffic between microservices based on their function, ensuring that specific node groups handle specific types of workloads. Which approach should the team adopt to ensure that pods are scheduled on the appropriate node groups within their Amazon EKS cluster?
+
+    a. Modify the Amazon EKS service role to limit which EC2 instances can join the cluster, ensuring that only specific node groups are available for scheduling. (X)
+
+    The Amazon EKS service role is used for ELS cluster creation and isn't directly involved in pod scheduling decisions on specific nodes or node groups. 
+
+    b. Utilize Kubernetes taints and tolerations to ensure that pods are scheduled on the desired node groups based on their labels.  (O)
+
+    By applying taints to nodes, you can repel specific pods, ensuring that only pods with matching tolerations (that can "tolerate" the taint) can be scheduled on those nodes. 
+
+3. A software company is developing a containerized application and wants to store its Docker images in a secure, scalable, and reliable registry on AWS. They also require tight integration with AWS services for seamless deployment to their Kubernetes cluster running on Amazon EKS. Which AWS service should the company use to store and manage their Docker images?
+
+    AnswerL Amazon ECR
+
+4. A retail company wants to modernize its e-commerce platform by transitioning to a microservices architecture. They are looking for an AWS service that can orchestrate and manage containerized applications, provide automatic scaling based on traffic, integrate with native AWS services for logging and monitoring, and doesn't necessitate managing the underlying cluster infrastructure. Which AWS service would be BEST suited for the company's needs?
+
+    a. AWS Lambda - Transistion to a serverless architecture and deploy code without managing any infrastructure. (X)
+
+    While AWS Lambda provides a serverless compute environment, **it's not designed for managing containerized applications**. Transitioning to a serverless architecture would be a significant change from the company's goal of adpoting a microservices architecture using containers.
+
+    b. Amazon ECS - Use the Elastic Container Service with the Fargate launch type to manage and scale containerized applications without managing the cluster infrastructure. (O)
+
+    Amazon ECS provides container orchestration, and when used with the Farget launch type, customers can run container without having to manage the underlying cluster infrastructure. This meets all of the company's specified requirements.
+
+    (See Slide 307 ECS-Farget Launch Type, you do not provision the infrastructure (no EC2 instances to manage), it's all Serverless.)
+
+    c. Amazon EKS - Use the Elastic Kubernetes Service to manage Kubernetes clusters and deploy containerized applications. (X)
+
+    雖然 Amazon EKS 是托管的 Kubernetes，但你仍然要：
+    - 管理 worker nodes（EC2 或 Fargate）
+    - 管理 Kubernetes 控制元件的設定（如 namespaces、ingress、RBAC 等）
+    - 維護和升級 Kubernetes 元件與資源（如 kube-proxy、CNI plug-ins）
+
+    即使使用 EKS on Fargate，也還是需要管理 Kubernetes 部署層次，並設定 Fargate profiles，複雜度較高。
+
+5. A technology company has deployed a multi-node Kubernetes cluster on Amazon EKS. Recently, they observed that one of their critical applications deployed on the cluster is intermittently failing. Upon inspection, they realized that the failing pods are consistently scheduled on a specific node. What should be the FIRST step in troubleshooting the issue related to this specific node in the Amazon EKS cluster?
+
+    Answer: Review the events and logs of the failing pod to identify any specific issues related to the node.
+
+
+6. 
 
 
 
 
 
+
+
+
+### Analytics
+
+### Application Integration
+1. A photo-sharing company is storing user profile pictures in an Amazon S3 bucket and an image analysis application is deployed on four Amazon EC2 instances. A data engineer would like to trigger an image analysis procedure only on one of the four Amazon EC2 instances for each photo uploaded.
+
+    What do you recommend?
+    
+    a. Create and Amazon S3 Event Notification that sends a message to an Amazon SNS topic. Subscribe the Amazon EC2 instances to the Amazon SNS topic. (X)
+
+    Using Amazon SNS would send a message to each Amazon EC2 instance via the Amazon SNS topic, therefore making all of them work for each upload. This is not the intended behavior.
+
+    - Amazon SNS 是「廣播（fan-out）」機制
+    當你把 SNS topic 當作 S3 的通知目標時，S3 每次上傳檔案都會觸發 SNS 發送訊息。
+    **SNS 是將這個訊息發送給所有訂閱**者（所有 4 台 EC2 都會收到）。
+    **結果會是：4 台 EC2 全部收到通知**，全部執行分析，導致重複處理、浪費資源。
+
+    - 沒有訊息「負載分散」或「單一消費者」機制
+    SNS 並不會只挑選一個訂閱者來送出訊息，它會送給每一個訂閱者。
+
+
+    b. Create and Amazon S3 Event Notification that sends a message to an Amazon SQS queue. Make the Amazon EC2 instances read from the Amazon SQS queue. (O)
+
+    Amazon Simple Queue Service (SQS) is a fully managed message queuing service that enables you to decouple and scale microservices, distributed systems, and serverless applications. SQS offers two types of message queues. Standard queues offer maximum throughput, best-effort ordering, and at-least-once delivery. SQS **FIFO queues are designed to guarantee that messages are processed exactly once**, in the exact order that they are sent.
+
+2. While consolidating logs for the weekly reporting, a development team at an e-commerce company noticed that an unusually large number of illegal AWS application programming interface (API) queries were made sometime during the week. Due to the off-season, there was no visible impact on the systems. However, this event led the management team to seek an automated solution that can trigger near-real-time warnings in case such an event recurs.
+
+    Which of the following represents the best solution for the given scenario?
+
+    a. Create an Amazon CloudWatch metric filter that process AWS CloudTrail logs having API call details and looks at any errors by factoring in all the error codes that need to be tracked. Create and alarm based on this metric's rate to send and Amazon SNS notification to the required team. (O)
+
+    b. Configure AWS CloudTrail to stream event data to Amazon Kinesis. Use Amazon Kinesis stream-level metrics in the Amazon CloudWatch to trigger an AWS Lambda function that will trigger an error workflow. (X)
+
+    AWS **CloudTrail cannot stream data to Amazon Kinesis**. **Amazon S3 buckets** and **Amazon CloudWatch logs** are the only destinations possible
+
+3. A media company wants to get out of the business of owning and maintaining its own IT infrastructure. As part of this digital transformation, the media company wants to archive about 5 petabytes of data in its on-premises data center for durable long-term storage.
+
+    What is your recommendation to migrate this data in the MOST cost-optimal way?
+
+    Answer: Transfer the on-premises data into multiple AWS Snowball Edge Storage Optimized devices. Copy the AWS Snowball Edge data into Amazon S3 and create  lifecycle policy to transition the data into Amazon S3 Glacier
+
+    AWS **Snowball Edge Storage** Optimized is the optimal choice if you need to **securely and quickly transfer dozens of terabytes to petabytes of data to AWS**. It provides up to 80 TB of usable HDD storage, 40 vCPUs, 1 TB of SATA SSD storage, and up to 40 Gb network connectivity to address large-scale data transfer and pre-processing use cases. The data stored on the AWS Snowball Edge device can be copied into the Amazon S3 bucket and later transitioned into Amazon S3 Glacier via a lifecycle policy. You can't directly copy data from AWS Snowball Edge devices into Amazon S3 Glacier.
+
+4. A financial services company runs its flagship web application on AWS. The application serves thousands of users during peak hours. The company needs a scalable near-real-time solution to share hundreds of thousands of financial transactions with multiple internal applications. The solution should also remove sensitive details from the transactions before storing the cleansed transactions in a document database for low-latency retrieval.
+
+    Which of the following would you recommend?
+
+    a.  Feed the streaming transactions into Amazon Kinesis Data Streams. Leverage AWS Lambda integration to remove sensitive data from every transaction and then store the cleansed transactions in Amazon DynamoDB. The internal applications can consume the raw transactions off the Amazon Kinesis Data Stream. (O)
+
+    ![Kinesis Data Stream](./image/kinesis_firehouse.jpg "Data Stream")
+
+    b. Feed the streaming transactions into Amazon Kinesis Data Firehose. Leverage AWS Lambda integration to remove sensitive data from every transaction and then store the cleansed transactions in Amazon DynamoDB. The internal applications can consume the raw transactions off the Amazon Kinesis ~~Data Firehose~~ (X)
+
+    Amazon Kinesis Data Firehose is an extract, transform, and load (ETL) service that reliably captures, transforms, and delivers streaming data to data lakes, data stores, and analytics services.
+
+    You cannot set up multiple consumers for Amazon Kinesis Data Firehose delivery streams as it can **dump data in a single data repository at a time**, so this option is incorrect.
+
+
+5. A media company is building a real-time analytics platform to process and analyze video playback events from millions of devices globally. The data volume is expected to peak at thousands of events per second during live broadcasts. The platform requires immediate processing of these events for near-real-time dashboards and later storing them for batch processing. Which AWS service is most suitable for ingesting this high-volume real-time data?
+
+    Answer: Amazon Kinesis Data Streams
+
+    Amazon Kinesis Data Streams is designed for real-time data streaming. It can collet and process vast amounts of streaming data, such as the video placyback events in real time. This is a suitable choice for the media company's requirements, as it can handle the high-volume data and provide real-time analytics capabilities.
+
+6. A financial tech company is building an application to process transaction records. Due to the sensitive nature of financial data, it's imperative that no messages are lost, but some messages might fail processing due to intermittent errors. The company wants a mechanism to handle these failed messages so they can be investigated and reprocessed later. Which AWS strategy would be the most suitable for managing these failed messages?
+
+    Answer: Deploy Amazon SQS with an associated Dead Letter Queue (DLQ).
+
+7. A data engineering team at an e-commerce company is designing a system to notify various microservices whenever a new product is added to the inventory or an existing product's information is updated. These notifications should be immediately propagated to multiple subscribing endpoints including a search indexing service, a recommendation engine, and an inventory management system. Which AWS service is best suited for broadcasting these notifications to **multiple subscribers**?
+
+    a. Amazon SQS  (X)
+    b. Amazon SNS  (O)
+
+    Amazon SNS (Simple Notification Service) is designed for publish/subscribe scenarios. It allows message to be published once and then delivered to multiple subscribers, making it the ideal choice for the given scenario where notifications about product changes need to be propagated to multiple services.
+
+8. A travel agency is building a data pipeline to automate the processing of customer bookings. The process involves several steps: validating the customer data, checking hotel availability, processing payments, and sending a confirmation email. Due to the interdependencies of these steps and the need for error handling and retries, the engineering team is considering using an AWS service to coordinate and orchestrate the execution of these tasks. Which AWS service is best suited to handle this multi-step workflow?
+
+    Answer: AWS Step Functions
+
+    **AWS Step Functions** allows you to **coordinate multiple AWS services into serverless workflows** so you can build and update apps quickly. With build-in error handling, retry logic, and visualization, it's designed for precisely the kiind  of multi-step workflow the travel agency is aiming to implement.
+
+
+9. A health and fitness company wants to integrate user activity data from a popular third-party fitness application with its own data warehouse for in-depth analysis. The company needs to ensure that the data is synced regularly, can handle bi-directional data flow, and requires minimal coding. Which AWS service would be the most suitable for seamlessly **transferring data between the third-party application and the company's data warehouse**?
+
+    Answer: Amazon AppFlow
+
+10. An online gaming platform is seeking to build a centralized system where they can capture in-game events, such as user achievements, in-app purchases, and gameplay milestones. They want these events to trigger a variety of automated responses, including sending notifications, updating leaderboards, and triggering marketing campaigns. The solution should be scalable to handle a large volume of events and allow seamless integration with various AWS services and third-party applications. Which AWS service is best suited to handle and route these in-game events?
+
+    a. Amazon EventBridge (O)
+
+    Amazon EventBridge is a serverless event bus service that makes it easy to **connect applications using data from various sources**, including **custom applications and third-party software**. It's desgined to handle a vast array of event sources and route thouse events to specific targets, aligning well with the described gaming platform's needs.
+
+    b. Amazon Kinesis Data Streams (X)
+
+    Amazon Kinesis 是為了「串流處理大量資料記錄」而設計，適合的場景是：
+    - 高頻率資料輸入（如 IoT 記錄、clickstream、視訊感測器）
+    - 寫入後由 consumer app 處理（通常需要自己寫 consumer）
+    - **著重於資料順序、分割槽處理、高吞吐量**
+
+    但它不具備如下特性：
+    - 無內建規則式路由功能（不像 EventBridge 可根據 event pattern 自動路由）
+    - **不支援與第三方應用整合**（EventBridge 可支援 SaaS、Zendesk、Datadog 等）
+    - 不適合用來做「行動觸發」用途（通知、排行、行銷等）
+
+11. A large e-commerce company is using Amazon MWAA (Managed Workflows for Apache Airflow) to orchestrate their ETL workflows. Due to varying loads during peak shopping seasons, the company wants their Airflow environment to automatically adjust resources based on the workload. How does Amazon MWAA handle auto-scaling to accommodate fluctuating workflow demands?
+
+    a. Amazon MWALL dynamically adjusts the number of worker nodes based on the **queue backlog**. (O)
+
+    Amazon MWAA can automatically scale the number of Apache Airflow workers in response to the workflow demands. When there are more tasks in the queue, MWAA will add more workers to process the tasks, providing auto-scaling capabilities.
+
+    b. Amazon MWAA relies on AWS Lambda for auto-scaling without any worker nodes. (X)
+
+
+### Security, Identity, and Compliance
+1. A retail company is migrating its infrastructure from the on-premises data center to AWS Cloud. The company wants to deploy its two-tier application with the EC2 instance-based web servers in a public subnet and PostgreSQL RDS-based database layer in a private subnet. The company wants to ensure that the database access credentials used by the web servers are handled securely as well as these credentials are changed every 90 days in an automated way using a built-in integration.
+
+    Which of the following solutions would you recommend for the given use case?
+
+    Answer: Use AWS Secrets Manager to store the database access credentials with the rotation interval configured to 90 days. Set up the application web servers to retrieve the credentials from the Secrets Manager.
+
+    b. Store the database access credentials in an SSE-S3 encrypted text file on S3. Configure the application web servers to retrieve the credentials from S3 on system boot. Write custom code to change the database access credentials stored on the encrypted file after 90 days
+
+    c. Store the database access credentials in a KMS-encrypted text file on EFS. Configure the application web servers to retrieve the credentials from EFS on system boot. Write custom code to change the database access credentials stored on the encrypted file after 90 days
+
+    A key requirement of the use case is to automate the database access secrets rotation every 90 days using a built-in integration. Both these options involve writing custom code to change the database access credentials after 90 days. In addition, storing database access credentials in an external file (even if encrypted) is not a best practice, so both these options are incorrect.
+
+    Reference:
+
+    https://aws.amazon.com/secrets-manager/
+
+2. A media streaming company operates a set of APIs and content delivery endpoints hosted on Amazon EC2 instances. The architecture requires that all network communications be encrypted using SSL/TLS to meet compliance requirements for data-in-transit protection. To reduce administrative burden, the platform engineering team is looking for a solution that will **automatically** handle the creation, renewal, and deployment of digital certificates used in secure HTTPS communications. The solution should minimize manual steps and ongoing maintenance while integrating natively with the AWS ecosystem.
+
+    Which solution best meets these requirements with the least operational overhead?
+
+    a. Use AWS Certificate Manager (ACM) to provision and manage public or private SSL/TLS certificates. Attach the certificates to integrated AWS resources such ad Elastic Load Balancers or CloudFront distributions. (O)
+
+    AWS Certificate Manager (ACM) provides fully managed provisioning, renewal, and deployment of SSL/TLS certificates for use with AWS services. **Certificates issued by ACM are automatically renewed before expiration** and **can be attached directly to integrated AWS resources like Elastic Load Balancers, CloudFront, and API Gateway**. ACM eliminates the need to manually generate, distribute, or rotate certificates, greatly reducing operational overhead. It also supports private certificate authorities (ACM PCA) if internal trust hierarchies are required.
+
+
+    b. Use AWS Systems Manager Paremeter Store to securely store and manually rotate SSL/TLS certificates. Build custom automation with Lambda functions to fetch and deploy certificates to EC2 instances on a scheduled basis. (X)
+
+    While Parameter Store can securely store secrets, including certificate data, **it does not natively manage certificate lifecycle events such as renewal or deployment**. Engineers would **need to build custom automation**, typically involving Lambda functions or EC2 user data scripts, to pull and refresh the certificates on a schedule. This increases complexity and requires ongoing maintenance that contradicts the goal of minimizing operational overhead.
+
+
+### Networking and Content Delivery
+
+
+### Management and Goverence
+1. A retail company is migrating its infrastructure from the on-premises data center to AWS Cloud. The company wants to deploy its two-tier application with the EC2 instance-based web servers in a public subnet and PostgreSQL RDS-based database layer in a private subnet. The company wants to ensure that the database access credentials used by the web servers are handled securely as well as these credentials are changed every 90 days in an automated way using a built-in integration.
+
+    Which of the following solutions would you recommend for the given use case?
+
+    Answer: Use AWS Secrets Manager to store the database access credentials with the rotation interval configured to 90 days. Set up the application web servers to retrieve the credentials from the Secrets Manager.
+
+    AWS Secrets Manager enables you to easily rotate, manage, and retrieve database credentials, API keys, and other secrets throughout their lifecycle. Users and applications retrieve secrets with a call to Secrets Manager APIs, eliminating the need to hardcode sensitive information in plain text. Secrets Manager offers secret rotation with built-in integration for Amazon RDS, Amazon Redshift, and Amazon DocumentDB.
 
 
 ### AWS Budget & AWS Cost Explorer, Amazon API Gateway
@@ -700,6 +1061,7 @@
 3. A fintech startup offers a RESTful API to its clients, providing real-time access to financial data analytics. As their user base grows, they want to ensure that their backend services are not overwhelmed by too many requests, potentially degrading performance for all users. They also want to offer premium subscribers a higher request rate compared to free-tier users. Which AWS service should the startup implement to define and enforce varying request rates and burst capabilities based on user subscription tiers, and thereby **protect their backend systems** from potential traffic spikes?
 
     Answer: Implement Amazon API Gateway, utilizing its built-in throttling rules to set different Rate and Burst limits for API methods, and apply these rules to different API key-based subscription tiers.
+
 
 ### Machine Learning
 1. A data science team at a retail company wants to streamline the process of data preparation for their machine learning models. They often deal with a mix of structured and unstructured data from various sources like relational databases, data lakes, and third-party APIs. The team has learned about Amazon SageMaker Data Wrangler and is considering using it for their data preparation tasks. Which of the following describes the best utilization of SageMaker Data Wrangler for the team's requirements?
@@ -778,3 +1140,42 @@
     ✅ 使用 Feature Store 為唯一來源（single source of truth），可確保訓練和推論都使用同一組 features。
 
 
+
+### Developer Tools
+1. A startup is building a cloud-native web application on AWS. The development team, spread across multiple geographic locations, requires a collaborative development environment where they can write, run, and debug code together in real-time. They are considering AWS Cloud9 for this purpose. Which of the following benefits of AWS Cloud9 would best address the needs of the startup's distributed development team?
+
+    Answer: Leverage Cloud9's pre-configured development environments, allowing developers to start coding without the need for local machine setup, and ensuiring consistent development settings across the team.
+
+    This is one of the Cloud9's main advantages. It provides a cloud-based IDE that eliminates the "it works on machine" problem and ensures consistent, pre-configured enviornments that can be accessed from anywhere.
+
+2. A software company is rapidly expanding its cloud infrastructure on AWS. They are deploying multiple microservices, databases, and networking resources. The company's cloud engineering team is familiar with popular programming languages and wishes to use this expertise to define, compose, and share their cloud resources in a programmatic manner, avoiding manual setups on the AWS Management Console. Which AWS service would be the most effective solution for the cloud engineering team to define cloud resources using familiar programming languages?
+
+    Answer: Utilize AWS Cloud Developement Kit (CDK) to programmatically define cloud resources using familiar programming langurages and then synthesize them into CloudFormation templates for deploymemts.
+
+    (CloudFormation 是 IaC（Infrastructure as Code）核心工具，
+    但它：
+
+    不支援熟悉的 通用程式語言
+    無法用 function、迴圈、模組組合等方式提高可維護性
+    對「開發導向團隊」的體驗不佳（特別是快速擴張的開發團隊），故答案為CDK)
+
+3. A digital agency is building web applications for various clients and uses a continuous integration and continuous deployment (CI/CD) process. They store their code in AWS CodeCommit and want a solution that automatically compiles source code, runs tests, and produces software packages that are ready for deployment, whenever there's a new code push. They are considering AWS CodeBuild for this workflow. Which of the following describes the primary capability of AWS CodeBuild that makes it suitable for the agency's requirements?
+
+    a. Utilize AWS CodeBuild to automatically compile source code, run unit tests, and produce deployment artifacts every time there's a change in the source code repository. (O)
+    b. Implement AWS CodeBuild to **maintain version-controlled repositories**, offering Git-based workflows and source code storage. (X) -> **AWS CodeCommit** 
+
+4. A startup is developing a new software product and has a distributed team of developers located in various parts of the world. They are looking for a secure, scalable, and managed source control service that integrates seamlessly with AWS services for their CI/CD pipeline. They are evaluating AWS CodeCommit for this purpose. Which of the following best describes the primary functionality of AWS CodeCommit in addressing the startup's requirements?
+
+    a. Use AWS CodeCommit to automatically build and deploy code changes across mutiple AWS environments, providing a full CI/CD pipeline out-of-the-box. (X)
+
+    While AWS CodeCommit is part of the AWS CI/CD ecosystem, its primary function is as a source control service, not to build and deploy code. Services like AWS CodeBuild and AWS CodePipeline handle the building and deployment aspects.
+
+    b. Utilize AWS CodeCOmmit as a fully managed source control service, offering secure and scalable Git-based repositories, allowing developers to collaborate and store code efficently. (O)
+
+5. A tech company has a robust CI/CD system in place, with code stored in AWS CodeCommit and builds managed by AWS CodeBuild. As the next step in their CI/CD pipeline, they want an automated deployment service that can handle deployments to EC2 instances, on-premises instances, and serverless Lambda functions, ensuring minimal downtime and providing the ability to easily roll back if necessary. They are considering AWS CodeDeploy for this role. Which of the following describes the primary advantage of incorporating AWS CodeDeploy into their CI/CD pipeline?
+
+    Answer: Utilize AWS CodeDeploy to automate deployments across different enviornments, using features like blue/green deployments to minimize downtime and maintain a rollback capability.
+
+6. A development team at a SaaS company is in the process of designing a comprehensive CI/CD system. The team wants a solution that orchestrates a series of stages, including source control, build, test, and deployment, with seamless integration between AWS services and third-party tools. Their goal is to automate the entire software release process, ensuring consistent and rapid delivery of new features to their customers. Which AWS service would be the most appropriate choice to orchestrate and model the entire release process for the team's CI/CD pipeline?
+
+    Answer: Deploy AWS CodePipeline to model and visualize the entire release process, seamlessly integrating with tools like CodeCommit, CodeBuild and CodeDeploy to automate the stages of the CI/CD pipeline.
